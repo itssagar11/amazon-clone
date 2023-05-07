@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import "./Home.css"
 import { useDispatch } from "react-redux"
-import { addUser } from "../../store/features/userSlice"
+import { addUser, resetUser } from "../../store/features/userSlice"
 import { Slider } from "../../components/slider/Slider"
 import { useGlobalContext } from "../../context/globalContext"
 import { Product } from "../../components/product/Product"
 import { getProducts } from "../../store/store"
 import { useAuthenticateUserQuery } from '../../store/services/authService'
-import { addCategorie, addProduct, resetProducts } from "../../store/features/productSlice"
-import { categorieData } from "../../ProductData"
-import da from "../../ProductData"
+
 export const Home = () => {
   const products = getProducts()
   const [show, setShow] = useState(false);
@@ -18,25 +16,24 @@ export const Home = () => {
   }
   const dispatch = useDispatch()
   const { searchField } = useGlobalContext()
-  const { data } = useAuthenticateUserQuery()
+  const { data, error } = useAuthenticateUserQuery()
 
 
-  useEffect(() => {
-    dispatch(addCategorie(categorieData))
-    da?.map((res) => dispatch(addProduct(res)))
-    return ()=>{
-      dispatch(resetProducts())// bad coding 
-    }
-  }, [])
+
 
   useEffect(() => {
     if (data) {
       dispatch(addUser({
-        email: "shauray.1@gmail.com",
-        name: "shaurya"
+        email: `${data.mobile}`,
+        name: data.name
       }))
     }
   }, [data])
+  useEffect(() => {
+    if (error) {
+      dispatch(resetUser())
+    }
+  }, [error])
   const filteredData = products?.filter((el) => {
     if (searchField === '') {
       return el;
@@ -51,7 +48,7 @@ export const Home = () => {
       return (
         <Product
           key={index}
-          id={index}
+          id={element.id}
           title={element.title}
           price={element.price}
           image={element.image}
@@ -66,7 +63,7 @@ export const Home = () => {
         return (
           <Product
             key={index}
-            id={index}
+            id={element.id}
             title={element.title}
             price={element.price}
             image={element.image}
